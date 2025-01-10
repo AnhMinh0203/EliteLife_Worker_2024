@@ -304,7 +304,7 @@ namespace EliteLife2024_Worker
             }
         }
 
-        // Check rank
+        // Cập nhật rank cho 1 thằng cha
         public async Task<string> CheckRankAsync(int collaboratorId)
         {
             var connectPostgres = new ConnectToPostgresql(_configuration);
@@ -316,6 +316,86 @@ namespace EliteLife2024_Worker
                 var result = await connection.ExecuteScalarAsync<string>(query, new { CollaboratorId = collaboratorId });
 
                 return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi: {ex.Message}", ex);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        // Cập nhật rank cho tất cả cha, ông
+        public async Task<string> CheckRankAncestorsAsync(int collaboratorId)
+        {
+            var connectPostgres = new ConnectToPostgresql(_configuration);
+            using var connection = await connectPostgres.CreateConnectionAsync();
+
+            try
+            {
+                var query = @"Select * from dbo.get_ancestors (@collaboratorId)";
+                var ancestors = await connection.QueryAsync<int>(query, new { CollaboratorId = collaboratorId });
+                ancestors = ancestors.Append(collaboratorId);
+                foreach (var ancestorId in ancestors)
+                {
+                    await CheckRankAsync(ancestorId);
+                }
+                return "Đã cập nhật rank cho các bậc cha.";
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi: {ex.Message}", ex);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        // Cập nhật star cho 1 thằng cha
+        public async Task<string> CheckStarAsync(int collaboratorId)
+        {
+            var connectPostgres = new ConnectToPostgresql(_configuration);
+            using var connection = await connectPostgres.CreateConnectionAsync();
+
+            try
+            {
+                var query = @"Select * from dbo.check_star (@collaboratorId)";
+                var result = await connection.ExecuteScalarAsync<string>(query, new { CollaboratorId = collaboratorId });
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Lỗi: {ex.Message}", ex);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        // Cập nhật star cho tất cả cha, ông
+
+        public async Task<string> CheckStarAncestorsAsync(int collaboratorId)
+        {
+            var connectPostgres = new ConnectToPostgresql(_configuration);
+            using var connection = await connectPostgres.CreateConnectionAsync();
+
+            try
+            {
+                var query = @"Select * from dbo.get_ancestors (@collaboratorId)";
+                var ancestors = await connection.QueryAsync<int>(query, new { CollaboratorId = collaboratorId });
+                ancestors = ancestors.Append(collaboratorId);
+                foreach (var ancestorId in ancestors)
+                {
+                    await CheckStarAsync(ancestorId);
+                }
+                return "Đã cập nhật sao cho các bậc cha.";
+
             }
             catch (Exception ex)
             {
