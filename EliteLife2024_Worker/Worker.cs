@@ -22,6 +22,7 @@ namespace EliteLife2024_Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
+            Console.WriteLine("Xin chào! Đây là thử nghiệm tiếng Việt: Đẹp trai và tài năng!");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -68,8 +69,13 @@ namespace EliteLife2024_Worker
                             _logger.LogInformation($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
 
                             //3. Cập nhật Rank
-                            var rankResult = await CheckRankAsync(collaboratorId);
+                            var rankResult = await CheckRankAncestorsAsync(collaboratorId);
                             _logger.LogInformation($"Kết quả kiểm tra rank: {rankResult}");
+
+
+                            //3. Cập nhật Star
+                            var starResult = await CheckStarAncestorsAsync(collaboratorId);
+                            _logger.LogInformation($"Kết quả kiểm tra star: {starResult}");
 
                             //4. Cập nhật IsProcess cho Order
                             var orderStatusResult = await UpdateOrderStatusAsync(collaboratorId);
