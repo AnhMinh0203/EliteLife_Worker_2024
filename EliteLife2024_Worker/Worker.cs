@@ -1,5 +1,4 @@
-﻿
-using Dapper;
+﻿using Dapper;
 using Elite_life_datacontext.DataBase;
 using EliteLife2024_Worker.Model;
 using Microsoft.Extensions.Configuration;
@@ -22,7 +21,6 @@ namespace EliteLife2024_Worker
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
-            Console.WriteLine("Xin chào! Đây là thử nghiệm tiếng Việt: Đẹp trai và tài năng!");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -52,34 +50,53 @@ namespace EliteLife2024_Worker
                             {
                                 CollaboratorId = reader.GetInt32(0),
                                 AmountOrder = reader.GetInt32(1),
-                                OrderId = reader.GetInt32(2),
+                                OrderId = reader.GetInt32(2)
                             };
 
-                            // 2. Gọi các hàm chia hoa hồng
-                            var shareResult = await CaculateShareCommissionAsync(order);
-                            _logger.LogInformation($"Kết quả chia hoa hồng đồng chia: {shareResult}");
-
-                            var introResult = await CaculateIntroCommissionAsync(order);
-                            _logger.LogInformation($"Kết quả chia hoa hồng giới thiệu: {introResult}");
-
-                            var leaderResult = await CaculateLeaderCommissionAsync(order);
-                            _logger.LogInformation($"Kết quả chia hoa hồng lãnh đạo: {leaderResult}");
-
-                            var gratitudeResult = await CaculateGratitudeCommissionAsync(gratitude);
-                            _logger.LogInformation($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
+                            var historyParam = new CreateWalletHistory
+                            {
+                                CollaboratorId = reader.GetInt32(0),
+                                WalletType = "Source",
+                                Value = reader.GetInt32(3),
+                                Note = $"Mua {reader.GetInt32(1)} combo",
+                            };
 
                             //3. Cập nhật Rank
                             var rankResult = await CheckRankAncestorsAsync(collaboratorId);
                             _logger.LogInformation($"Kết quả kiểm tra rank: {rankResult}");
+                            WriteToFile($"Kết quả kiểm tra rank: {rankResult}");
 
+                            //4. Tạo lịch sử
+                            var historyResult = await CreateWalletHistoryAsync(historyParam);
 
-                            //3. Cập nhật Star
+                            //5. Cập nhật Star
                             var starResult = await CheckStarAncestorsAsync(collaboratorId);
                             _logger.LogInformation($"Kết quả kiểm tra star: {starResult}");
+                            WriteToFile($"Kết quả kiểm tra star: {starResult}");
 
-                            //4. Cập nhật IsProcess cho Order
+
+                            // 2. Gọi các hàm chia hoa hồng
+                            var shareResult = await CaculateShareCommissionAsync(order);
+                            _logger.LogInformation($"Kết quả chia hoa hồng đồng chia: {shareResult}");
+                            WriteToFile($"Kết quả chia hoa hồng đồng chia: {shareResult}");
+
+                            var introResult = await CaculateIntroCommissionAsync(order);
+                            _logger.LogInformation($"Kết quả chia hoa hồng giới thiệu: {introResult}");
+                            WriteToFile($"Kết quả chia hoa hồng giới thiệu: {introResult}");
+
+                            var leaderResult = await CaculateLeaderCommissionAsync(order);
+                            _logger.LogInformation($"Kết quả chia hoa hồng lãnh đạo: {leaderResult}");
+                            WriteToFile($"Kết quả chia hoa hồng lãnh đạo: {leaderResult}");
+
+                            var gratitudeResult = await CaculateGratitudeCommissionAsync(gratitude);
+                            _logger.LogInformation($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
+                            WriteToFile($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
+
+                           
+                            //6. Cập nhật IsProcess cho Order
                             var orderStatusResult = await UpdateOrderStatusAsync(collaboratorId);
                             _logger.LogInformation($"Kết quả kiểm tra status: {orderStatusResult}");
+                            WriteToFile($"Kết quả kiểm tra status: {orderStatusResult}");
 
                         }
                         else
@@ -93,7 +110,32 @@ namespace EliteLife2024_Worker
                     _logger.LogError($"Lỗi khi xử lý: {ex.Message}");
                 }
                 // sau 1s nó chạy lại 1 lần
-                await Task.Delay(15000, stoppingToken);
+                await Task.Delay(10000, stoppingToken);
+            }
+        }
+        // Log
+        public void WriteToFile(string Message)
+        {
+            string path = AppDomain.CurrentDomain.BaseDirectory + "\\Logs";
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
+            string filepath = AppDomain.CurrentDomain.BaseDirectory + "\\Logs\\ServiceLog_" + DateTime.Now.Date.ToShortDateString().Replace('/', '_') + ".txt";
+            if (!File.Exists(filepath))
+            {
+                // Create a file to write to.
+                using (StreamWriter sw = File.CreateText(filepath))
+                {
+                    sw.WriteLine(Message);
+                }
+            }
+            else
+            {
+                using (StreamWriter sw = File.AppendText(filepath))
+                {
+                    sw.WriteLine(Message);
+                }
             }
         }
 
@@ -429,6 +471,39 @@ namespace EliteLife2024_Worker
             catch (Exception ex)
             {
                 throw new Exception($"Lỗi: {ex.Message}", ex);
+            }
+            finally
+            {
+                await connection.CloseAsync();
+            }
+        }
+
+        // Tạo lịch sử
+        public async Task<string> CreateWalletHistoryAsync(CreateWalletHistory createWalletHistory)
+        {
+            var connectPostgres = new ConnectToPostgresql(_configuration);
+            using var connection = await connectPostgres.CreateConnectionAsync();
+
+            try
+            {
+                using var command = connection.CreateCommand();
+                command.CommandText = @"SELECT * FROM dbo.create_wallet_history(
+                    @p_collaboratorId, 
+                    @p_walletType, 
+                    @p_value,
+                    @p_note)";
+
+                command.Parameters.AddWithValue("@p_collaboratorId", createWalletHistory.CollaboratorId);
+                command.Parameters.AddWithValue("@p_walletType", createWalletHistory.WalletType);
+                command.Parameters.AddWithValue("@p_value", createWalletHistory.Value);
+                command.Parameters.AddWithValue("@p_note", createWalletHistory.Note);
+
+                await command.ExecuteNonQueryAsync();
+                return "Lịch sử ví đã được tạo thành công.";
+            }
+            catch (Exception ex)
+            {
+                return $"Lỗi khi xử lý: {ex.Message}";
             }
             finally
             {
