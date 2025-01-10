@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.8.34525.116
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteLife2024_Worker", "EliteLife2024_Worker\EliteLife2024_Worker.csproj", "{ACCDC5A4-54B3-439E-B01C-309427C0F9EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ACCDC5A4-54B3-439E-B01C-309427C0F9EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ACCDC5A4-54B3-439E-B01C-309427C0F9EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ACCDC5A4-54B3-439E-B01C-309427C0F9EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ACCDC5A4-54B3-439E-B01C-309427C0F9EF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E90020B2-9451-42C4-9AF5-B6A939B4343C}
+	EndGlobalSection
+EndGlobal
