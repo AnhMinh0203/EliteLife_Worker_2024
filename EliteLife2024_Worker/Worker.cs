@@ -24,6 +24,7 @@ namespace EliteLife2024_Worker
 
             while (!stoppingToken.IsCancellationRequested)
             {
+                WriteToFile("Service is running at: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
                 try
                 {
                     if (_logger.IsEnabled(LogLevel.Information))
@@ -116,12 +117,12 @@ namespace EliteLife2024_Worker
         // Log
         public void WriteToFile(string Message)
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory + "\\Logs";
+            string path = AppDomain.CurrentDomain.BaseDirectory + "/Logs";
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
-            string filepath = AppDomain.CurrentDomain.BaseDirectory + "\\Logs\\ServiceLog_" + DateTime.Now.Date.ToShortDateString().Replace('/', '_') + ".txt";
+            string filepath = AppDomain.CurrentDomain.BaseDirectory + "/Logs/ServiceLog_" + DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
             if (!File.Exists(filepath))
             {
                 // Create a file to write to.
