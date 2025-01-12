@@ -333,8 +333,7 @@ namespace EliteLife2024_Worker
                 command.CommandText = @"SELECT * FROM dbo.cal_gratitude_commission(
                     @p_collaboratorId,
                     @p_amountOrder,
-                    @p_ordersId
-                    )";
+                    @p_ordersId)";
 
                 command.Parameters.AddWithValue("@p_collaboratorId", gratitudeCommissionModel.CollaboratorId);
                 command.Parameters.AddWithValue("@p_amountOrder", gratitudeCommissionModel.AmountOrder);
