@@ -57,7 +57,7 @@ namespace EliteLife2024_Worker
                             {
                                 CollaboratorId = reader.GetInt32(0),
                                 WalletType = "Source",
-                                Value = reader.GetInt32(3),
+                                Value = ((reader.GetInt32(3)) * (-1)),
                                 Note = $"Mua {reader.GetInt32(1)} combo",
                             };
 
