@@ -21,5 +21,6 @@ namespace EliteLife2024_Worker.Model
     {
         public int Id { get; set; }
         public string Rank { get; set; }
+        public string ApplicationType { get; set; }
     }
 }

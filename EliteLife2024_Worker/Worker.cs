@@ -43,8 +43,8 @@ namespace EliteLife2024_Worker
                             // Ánh xạ dữ liệu từ hàm get_order vào model
                             var order = new CommissionModel
                             {
-                                CollaboratorId = reader.GetInt32(0), 
-                                AmountOrder = reader.GetInt32(1)   
+                                CollaboratorId = reader.GetInt32(0),
+                                AmountOrder = reader.GetInt32(1)
                             };
 
                             var gratitude = new GratitudeCommissionModel
@@ -93,7 +93,7 @@ namespace EliteLife2024_Worker
                             _logger.LogInformation($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
                             WriteToFile($"Kết quả chia hoa hồng tri ân: {gratitudeResult}");
 
-                           
+
                             //6. Cập nhật IsProcess cho Order
                             var orderStatusResult = await UpdateOrderStatusAsync(collaboratorId);
                             _logger.LogInformation($"Kết quả kiểm tra status: {orderStatusResult}");
@@ -227,11 +227,11 @@ namespace EliteLife2024_Worker
                 // Tính tổng số lượng từng Rank
                 var totalByRank = new Dictionary<string, int>
                 {
-                    { "V1", collaborators.Count(c => c.Rank == "V1") },
-                    { "V2", collaborators.Count(c => c.Rank == "V2") },
-                    { "V3", collaborators.Count(c => c.Rank == "V3") },
-                    { "V4", collaborators.Count(c => c.Rank == "V4") },
-                    { "V5", collaborators.Count(c => c.Rank == "V5") }
+                    { "V1", collaborators.Count(c => c.Rank is "V1" or "V2" or "V3" or "V4" or "V5" && c.ApplicationType != "User") },
+                    { "V2", collaborators.Count(c => c.Rank is "V2" or "V3" or "V4" or "V5" && c.ApplicationType != "User") },
+                    { "V3", collaborators.Count(c => c.Rank is "V3" or "V4" or "V5" && c.ApplicationType != "User") },
+                    { "V4", collaborators.Count(c => c.Rank is "V4" or "V5" && c.ApplicationType != "User") },
+                    { "V5", collaborators.Count(c => c.Rank == "V5" && c.ApplicationType != "User") }
                 };
 
                 // 2. Tính hoa hồng theo từng Rank
