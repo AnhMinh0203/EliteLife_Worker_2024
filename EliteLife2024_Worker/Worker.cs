@@ -245,6 +245,14 @@ namespace EliteLife2024_Worker
                     { "V5", Math.Round(baseCommission * 0.1M / totalByRank["V5"]) }
                 };
 
+                // Lấy ID ví EL11218 để cập nhật hoa hồng trích xuất
+                var idWalletCommission = await connection.QueryFirstOrDefaultAsync<int>(
+                    @"SELECT ""Id"" 
+              FROM dbo.""Wallets"" 
+              WHERE ""CollaboratorId"" = (SELECT ""Id"" FROM dbo.""Collaborators"" WHERE ""UserName"" = 'EL11220') 
+              AND ""WalletTypeEnums"" = 'Source';"
+                );
+
                 // 3. Duyệt qua từng cộng tác viên để cập nhật
                 foreach (var collaborator in collaborators)
                 {
@@ -252,13 +260,16 @@ namespace EliteLife2024_Worker
                     if (!commissionByRank.ContainsKey(rank)) continue;
 
                     var updateCommission = commissionByRank[rank];
-
+                    // Tính 10% hoa hồng trích vào ví EL11218
+                    var extractedCommission = updateCommission * 0.1M;
+                    // Trừ 10% từ hoa hồng của cộng tác viên
+                    var updatedCommissionForCollaborator = updateCommission - extractedCommission;
                     // Cập nhật ví
                     await connection.ExecuteAsync(
                         @"UPDATE dbo.""Wallets""
                   SET ""Available"" = COALESCE(""Available"", 0) + @UpdateCommission
                   WHERE ""CollaboratorId"" = @CollaboratorId AND ""WalletTypeEnums"" = 'Sale2';",
-                        new { UpdateCommission = updateCommission, CollaboratorId = collaborator.Id }
+                        new { UpdateCommission = updatedCommissionForCollaborator, CollaboratorId = collaborator.Id }
                     );
 
                     // Cập nhật ngưỡng đã nhận
@@ -266,7 +277,7 @@ namespace EliteLife2024_Worker
                         @"UPDATE dbo.""Collaborators""
                   SET ""Sale2Received"" = COALESCE(""Sale2Received"", 0) + @UpdateCommission
                   WHERE ""Id"" = @CollaboratorId;",
-                        new { UpdateCommission = updateCommission, CollaboratorId = collaborator.Id }
+                        new { UpdateCommission = updatedCommissionForCollaborator, CollaboratorId = collaborator.Id }
                     );
 
                     // Gọi hàm `create_wallet_history` để ghi lịch sử
@@ -280,9 +291,19 @@ namespace EliteLife2024_Worker
                         new
                         {
                             CollaboratorId = collaborator.Id,
-                            Value = updateCommission,
+                            Value = updatedCommissionForCollaborator,
                             Note = $"Hoa hồng lãnh đạo từ cộng tác viên EL{introCommissionModel.CollaboratorId} mua {introCommissionModel.AmountOrder} combo"
                         }
+                    );
+
+                    
+
+                    // Cập nhật ví EL11218 với hoa hồng trích ra
+                    await connection.ExecuteAsync(
+                        @"UPDATE dbo.""Wallets""
+                SET ""Available"" = COALESCE(""Available"", 0) + @ExtractedCommission
+                WHERE ""Id"" = @IdWalletCommission;",
+                        new { ExtractedCommission = extractedCommission, IdWalletCommission = idWalletCommission }
                     );
                 }
                 //await transaction.CommitAsync();
