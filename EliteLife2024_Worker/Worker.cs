@@ -236,14 +236,28 @@ namespace EliteLife2024_Worker
 
                 // 2. Tính hoa hồng theo từng Rank
                 var baseCommission = 3450000 * introCommissionModel.AmountOrder;
-                var commissionByRank = new Dictionary<string, decimal>
+                var commissionByRank = new Dictionary<string, decimal>();
+
+                foreach (var rank in totalByRank.Keys)
                 {
-                    { "V1", Math.Round(baseCommission * 0.6M / totalByRank["V1"]) },
-                    { "V2", Math.Round(baseCommission * 0.3M / totalByRank["V2"]) },
-                    { "V3", Math.Round(baseCommission * 0.2M / totalByRank["V3"]) },
-                    { "V4", Math.Round(baseCommission * 0.1M / totalByRank["V4"]) },
-                    { "V5", Math.Round(baseCommission * 0.1M / totalByRank["V5"]) }
-                };
+                    if (totalByRank[rank] > 0)
+                    {
+                        commissionByRank[rank] = Math.Round(baseCommission * (rank switch
+                        {
+                            "V1" => 0.6M,
+                            "V2" => 0.3M,
+                            "V3" => 0.2M,
+                            "V4" => 0.1M,
+                            "V5" => 0.1M,
+                            _ => 0M
+                        }) / totalByRank[rank]);
+                    }
+                    else
+                    {
+                        commissionByRank[rank] = 0; // Gán giá trị mặc định nếu tổng bằng 0
+                    }
+                }
+
 
                 // Lấy ID ví EL11218 để cập nhật hoa hồng trích xuất
                 var idWalletCommission = await connection.QueryFirstOrDefaultAsync<int>(
