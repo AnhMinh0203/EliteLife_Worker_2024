@@ -20,8 +20,6 @@ namespace EliteLife2024_Worker
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8;
-
             while (!stoppingToken.IsCancellationRequested)
             {
                 WriteToFile("Service is running at: " + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
@@ -115,14 +113,39 @@ namespace EliteLife2024_Worker
             }
         }
         // Log
+        //public void WriteToFile(string Message)
+        //{
+        //    string path = AppDomain.CurrentDomain.BaseDirectory + "/Logs";
+        //    if (!Directory.Exists(path))
+        //    {
+        //        Directory.CreateDirectory(path);
+        //    }
+        //    string filepath = AppDomain.CurrentDomain.BaseDirectory + "/Logs/ServiceLog_" + DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
+        //    if (!File.Exists(filepath))
+        //    {
+        //        // Create a file to write to.
+        //        using (StreamWriter sw = File.CreateText(filepath))
+        //        {
+        //            sw.WriteLine(Message);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        using (StreamWriter sw = File.AppendText(filepath))
+        //        {
+        //            sw.WriteLine(Message);
+        //        }
+        //    }
+        //}
+
         public void WriteToFile(string Message)
         {
-            string path = AppDomain.CurrentDomain.BaseDirectory + "/Logs";
+            string path = AppDomain.CurrentDomain.BaseDirectory + "\\Logs";
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
             }
-            string filepath = AppDomain.CurrentDomain.BaseDirectory + "/Logs/ServiceLog_" + DateTime.Now.ToString("yyyy_MM_dd") + ".txt";
+            string filepath = AppDomain.CurrentDomain.BaseDirectory + "\\Logs\\ServiceLog_" + DateTime.Now.Date.ToShortDateString().Replace('/', '_') + ".txt";
             if (!File.Exists(filepath))
             {
                 // Create a file to write to.
